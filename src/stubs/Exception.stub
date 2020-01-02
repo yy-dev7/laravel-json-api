@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Exceptions;
+
+use GzhPackages\JsonApi\Exceptions\BaseApiException;
+
+class DummyClass extends BaseApiException
+{
+    protected $status = 500;
+}
