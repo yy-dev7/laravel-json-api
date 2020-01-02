@@ -33,11 +33,11 @@ abstract class BaseApiException extends Exception
      * @param $error
      * @param $replacement
      */
-    public function __construct($error, array $replacement)
+    public function __construct($error, array $replacement = [])
     {
         $this->error = $error;
         $errorConfig = config('errors.' . $error);
-        $this->detail = $this->templateRender($errorConfig['detail'], $replacement);
+        $this->detail = isset($errorConfig['detail']) ? $this->templateRender($errorConfig['detail'], $replacement) : '';
         $this->code = $errorConfig['code'];
 
         parent::__construct($this->detail);
