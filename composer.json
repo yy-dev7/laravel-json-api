@@ -1,0 +1,25 @@
+{
+    "name": "gzhpackages/laravel-json-api",
+    "description": "提供统一返回格式和错误处理方式",
+    "homepage": "https://github.com/mervynyang/laravel-json-api",
+    "authors": [
+        {
+            "name": "mervynyang",
+            "email": "mervyn.yangmingyuan@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "illuminate/config": "~5.0|~6.0",
+        "illuminate/http": "^5.1|^6",
+        "illuminate/support": "~5.0|~6.0"
+    },
+    "require-dev": {
+        "illuminate/console": "^5.1|^6"
+    },
+    "autoload": {
+        "psr-4": {
+            "GzhPackages\\JsonApi\\": "src/"
+        }
+    }
+}
