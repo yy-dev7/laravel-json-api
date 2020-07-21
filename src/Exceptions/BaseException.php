@@ -89,13 +89,4 @@ abstract class BaseApiException extends Exception
     {
         return $this->status;
     }
-
-    public function getDefaultError()
-    {
-        return [
-            'error' => array_merge(config('errors.server_error'), [
-                'title' => strtoupper('server_error'),
-            ]),
-        ];
-    }
 }
