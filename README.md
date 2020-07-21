@@ -70,13 +70,59 @@ class Controller extends BaseController
 
 ### Exception
 
-1、命令行创建一个新的 Exception 类
+1、重写 `app/Exceptions/Handler.php` 的`render`方法
+```php
+function render($request, Exception $exception)
+    {
+        $rendered = parent::render($request, $exception);
+
+        if (config('app.debug')) {
+            return $rendered;
+        }
+
+        $status = $rendered->getStatusCode();
+        $json = [
+            'error' => array_merge(config('errors.server_error'), [
+                'title' => 'SERVER_ERROR',
+            ]),
+        ];
+        
+        /* 捕获自定义错误 */
+        if ($exception instanceOf \GzhPackages\JsonApi\Exceptions\BaseApiException) {
+            $json = $exception->toArray();
+            $status = $exception->getStatus();
+        }
+        
+        /* 自定义内置的错误，统一返回json */
+        if ($exception instanceOf \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+            $json = [
+                'error' => array_merge(config('errors.not_found'), [
+                    'title' => 'NOT_FOUND',
+                ]),
+            ];           
+            $status = 404;
+        }
+
+        if ($exception instanceOf \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
+            $json = [
+                'error' => array_merge(config('errors.method_not_allowed'), [
+                    'title' => 'METHOD_NOT_ALLOWED',
+                ]),
+            ];    
+            $status = 405;
+        }
+
+        return response()->json($json, $status);
+    }
+```
+
+2、命令行创建一个新的 Exception 类
 
 ```bash
 php artisan make:api-exception NotFoundException
 ```
 
-2、根据标准修改 http 状态码
+3、根据标准修改 http 状态码
 
 ```php
 class NotFoundException extends BaseApiException
@@ -85,7 +131,10 @@ class NotFoundException extends BaseApiException
 }
 ```
 
-3、在 `config/errors.php` 中配置错误详情
+4、在 `config/errors.php` 中配置错误详情
+
+在字段**detail**中，可以用大括号 `{}` 占位符
+
 ```
 'not_found_user' => [
     'code'   => 10003,
@@ -93,51 +142,18 @@ class NotFoundException extends BaseApiException
 ],
 ```
 
-4、抛出自定义异常
+
+5、抛出自定义异常
+
+第二个参数为 **detail** 占位符替换的对象，如果自定义的**detail**中无占位符，第二个参数可为空
 ```php
 throw new NotFoundException('not_found_user', ['name' => 'xiaoming']);
 ```
 
-5、重写 `app/Exceptions/Handler.php` 的`render`方法
+自定义meta信息：
+
 ```php
-function render($request, Exception $e)
-    {
-        $rendered = parent::render($request, $e);
-
-        if (config('app.debug')) {
-            return $rendered;
-        }
-
-        $status = $rendered->getStatusCode();
-        $errors = [
-            'code'   => 10000,
-            'detail' => $e->getMessage(),
-            'status' => $status,
-        ];
-
-        if ($e instanceOf \GzhPackages\JsonApi\Exceptions\BaseApiException) {
-            $errors = $e->toArray();
-            $status = $e->getStatus();
-        }
-
-        if ($e instanceOf \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-            $errors = array_merge([
-                'title'  => 'not_found',
-                'status' => 404,
-            ], config('errors.not_found'));
-
-            $status = 404;
-        }
-
-        if ($e instanceOf \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
-            $errors = array_merge([
-                'title'  => 'method_not_allowed',
-                'status' => 405,
-            ], config('errors.method_not_allowed'));
-
-            $status = 405;
-        }
-
-        return response()->json(['errors' => $errors], $status);
-    }
+$exception = new NotFoundException('not_found_user');
+$exception->withMeta(['language' => 'en']);
+throw $exception;
 ```

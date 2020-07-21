@@ -28,6 +28,11 @@ abstract class BaseApiException extends Exception
     protected $code;
 
     /**
+     * @var array
+     */
+    protected $meta;
+
+    /**
      * BaseApiException constructor.
      *
      * @param $error
@@ -37,36 +42,60 @@ abstract class BaseApiException extends Exception
     {
         $this->error = $error;
         $errorConfig = config('errors.' . $error);
-        $this->detail = isset($errorConfig['detail']) ? $this->templateRender($errorConfig['detail'], $replacement) : '';
         $this->code = $errorConfig['code'];
+        $this->detail = isset($errorConfig['detail']) ? $this->detailReplace($errorConfig['detail'], $replacement) : '';
 
         parent::__construct($this->detail);
     }
 
-    protected function templateRender($template, array $data)
+    protected function detailReplace($detail, array $data)
     {
-        $count = preg_match_all('/{(\w+)}/', $template, $matches);
+        $count = preg_match_all('/{(\w+)}/', $detail, $matches);
         if ($count > 0) {
             foreach ($matches[1] as $key) {
-                $template = str_replace('{' . $key . '}', $data[$key] ?? '', $template);
+                $detail = str_replace('{' . $key . '}', $data[$key] ?? '', $detail);
             }
         }
 
-        return $template;
+        return $detail;
+    }
+
+    public function withMeta(array $meta)
+    {
+        $this->meta = $meta;
+
+        return $this;
     }
 
     public function toArray()
     {
-        return [
-            'code'   => $this->code,
-            'title'  => strtoupper($this->error),
-            'status' => $this->status,
-            'detail' => $this->detail,
+        $json = [
+            'error' => [
+                'code'   => $this->code,
+                'title'  => strtoupper($this->error),
+                'status' => $this->status,
+                'detail' => $this->detail,
+            ],
         ];
+
+        if (isset($this->meta)) {
+            $json['meta'] = $this->meta;
+        }
+
+        return $json;
     }
 
     public function getStatus()
     {
         return $this->status;
+    }
+
+    public function getDefaultError()
+    {
+        return [
+            'error' => array_merge(config('errors.server_error'), [
+                'title' => strtoupper('server_error'),
+            ]),
+        ];
     }
 }

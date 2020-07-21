@@ -6,9 +6,9 @@ use Illuminate\Http\Response;
 
 trait ApiHelper
 {
-    public function content($content = null, $addition = [])
+    public function content($data = null, $members = [])
     {
-        $res = array_merge(['data' => $content], $addition);
+        $res = array_merge(['data' => $data], $members);
 
         return response($res, Response::HTTP_OK);
     }
