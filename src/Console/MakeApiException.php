@@ -11,13 +11,13 @@ class MakeApiException extends GeneratorCommand
 
     protected $description = 'Create a new custom api exception class';
 
-    protected function getStub()
+    protected function getStub(): string
     {
         return __DIR__.'/../stubs/Exception.stub';
     }
 
-     public function getDefaultNamespace($rootNamespace)
-    {
+     public function getDefaultNamespace($rootNamespace): string
+     {
         return $rootNamespace.'\Exceptions';
     }
 }

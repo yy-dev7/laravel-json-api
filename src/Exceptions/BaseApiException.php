@@ -60,14 +60,14 @@ abstract class BaseApiException extends Exception
         return $detail;
     }
 
-    public function withMeta(array $meta)
+    public function withMeta(array $meta): BaseApiException
     {
         $this->meta = $meta;
 
         return $this;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $json = [
             'error' => [
@@ -85,7 +85,7 @@ abstract class BaseApiException extends Exception
         return $json;
     }
 
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
